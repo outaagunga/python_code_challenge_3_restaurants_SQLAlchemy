@@ -1,45 +1,42 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
 from lib.database_setup import session
-from review import Review
-from restaurant import Restaurant
-
-
-Base = declarative_base()
+from lib.review import Review
+from lib.restaurant import Restaurant
 
 
 class Customer(Base):
     __tablename__ = 'customers'
-    # Columns
+
     id = Column(Integer, primary_key=True)
     first_name = Column(String)
     last_name = Column(String)
 
-    # Relationships
     reviews = relationship("Review", back_populates="customer")
     restaurants = relationship("Restaurant", secondary="reviews")
-
-    # Methods
-    def get_reviews(self):
-        # Return a collection of all the reviews that the customer has left
-        return self.reviews
-
-    def get_restaurants(self):
-        return self.restaurants
 
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
 
     def favorite_restaurant(self):
-        return session.query(Restaurant).join(Review).filter(
+        # Fix the query to select the restaurant with the highest rating
+        favorite_review = session.query(Review).filter(
             Review.customer == self
-        ).order_by(Review.rating.desc()).first().get_restaurant()
+        ).order_by(Review.rating.desc()).first()
+        if favorite_review:
+            return favorite_review.restaurant
+        else:
+            return None
 
     def add_review(self, restaurant, rating):
-        review = Review(restaurant=restaurant, customer=self, rating=rating)
-        session.add(review)
-        session.commit()
+        try:
+            review = Review(restaurant=restaurant,
+                            customer=self, rating=rating)
+            session.add(review)
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            raise e
 
     def delete_reviews(self, restaurant):
         session.query(Review).filter(
