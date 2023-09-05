@@ -1,14 +1,13 @@
-# restaurant.py
-
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from your_sqlalchemy_setup import Base
+from sqlalchemy.ext.declarative import declarative_base
+from lib.database_setup import session
+
+Base = declarative_base()
 
 
 class Restaurant(Base):
-    # Define the Restaurant class with the necessary columns and relationships
     __tablename__ = 'restaurants'
-
     # Columns
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -19,19 +18,17 @@ class Restaurant(Base):
     customers = relationship("Customer", secondary="reviews")
 
     # Methods
-    def reviews(self):
-        # Implement the Restaurant reviews() method
-        pass
+    def get_reviews(self):
+        return self.reviews
 
-    def customers(self):
-        # Implement the Restaurant customers() method
-        pass
+    def get_customers(self):
+        return self.customers
 
-    @classmethod
-    def fanciest(cls):
-        # Implement the Restaurant fanciest() method (class method)
-        pass
+    def fanciest(self):
+        return session.query(Restaurant).order_by(Restaurant.price.desc()).first()
 
     def all_reviews(self):
-        # Implement the Restaurant all_reviews() method
-        pass
+        review_strings = []
+        for review in self.reviews:
+            review_strings.append(review.full_review())
+        return review_strings

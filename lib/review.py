@@ -1,15 +1,14 @@
-# review.py
-
-from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
-from your_sqlalchemy_setup import Base
+from sqlalchemy.ext.declarative import declarative_base
+from lib.database_setup import session
+
+Base = declarative_base()
 
 
 class Review(Base):
-    # Define the Review class with the necessary columns and relationships
     __tablename__ = 'reviews'
-
-    # Columns
+    # columns
     id = Column(Integer, primary_key=True)
     restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
     customer_id = Column(Integer, ForeignKey('customers.id'))
@@ -20,14 +19,11 @@ class Review(Base):
     customer = relationship("Customer")
 
     # Methods
-    def customer(self):
-        # Implement the Review customer() method
-        pass
+    def get_customer(self):
+        return self.customer
 
-    def restaurant(self):
-        # Implement the Review restaurant() method
-        pass
+    def get_restaurant(self):
+        return self.restaurant
 
     def full_review(self):
-        # Implement the Review full_review() method
-        pass
+        return f"Review for {self.restaurant.name} by {self.customer.full_name()}: {self.rating} stars"
