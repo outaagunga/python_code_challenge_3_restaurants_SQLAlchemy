@@ -55,6 +55,7 @@ def test_delete_reviews():
     assert len(customer.get_reviews()) == 0
 
 
+# ........
 if __name__ == "__main__":
     test_restaurant_price()
     test_customer_full_name()
